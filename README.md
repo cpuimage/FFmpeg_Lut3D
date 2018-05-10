@@ -1,2 +1,2 @@
 # Lut3D
-3D Lookup table filter Port From FFmpeg
+3D Lookup Table filter Port From FFmpeg
