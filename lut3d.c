@@ -727,12 +727,13 @@ apply_lut(char *filename, const uint8_t *indata, uint8_t *outdata, int width, in
           int interpolation, int is16bit) {
     action_func *interp_func = 0;
     LUT3DContext *lut3d = lut3d_load(filename);
+
+    if (lut3d == NULL)
+        return (-1);
     lut3d->rgba_map[0] = 0;
     lut3d->rgba_map[1] = 1;
     lut3d->rgba_map[2] = 2;
     lut3d->rgba_map[3] = 3;
-    if (lut3d == NULL)
-        return (-1);
     lut3d->step = depth;
 
 #define SET_FUNC(name) do {                      \
