@@ -27,12 +27,13 @@
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 
-#include "stb_image.h"
-/* ref:https://github.com/nothings/stb/blob/master/stb_image.h */
-#define TJE_IMPLEMENTATION
 
-#include "tiny_jpeg.h"
-/* ref:https://github.com/serge-rgb/TinyJPEG/blob/master/tiny_jpeg.h */
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include "stb_image.h"
+#include "stb_image_write.h"
+/* ref:https://github.com/nothings/stb/blob/master/stb_image.h */
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -725,8 +726,11 @@ static int
 apply_lut(char *filename, const uint8_t *indata, uint8_t *outdata, int width, int height, int linesize, int depth,
           int interpolation, int is16bit) {
     action_func *interp_func = 0;
-
     LUT3DContext *lut3d = lut3d_load(filename);
+    lut3d->rgba_map[0] = 0;
+    lut3d->rgba_map[1] = 1;
+    lut3d->rgba_map[2] = 2;
+    lut3d->rgba_map[3] = 3;
     if (lut3d == NULL)
         return (-1);
     lut3d->step = depth;
@@ -754,19 +758,20 @@ apply_lut(char *filename, const uint8_t *indata, uint8_t *outdata, int width, in
     return (0);
 }
 
- 
+
 char saveFile[1024];
- 
+
 unsigned char *loadImage(const char *filename, int *Width, int *Height, int *Channels) {
-    return (stbi_load(filename, Width, Height, Channels, 0));
+    unsigned char *buffer = stbi_load(filename, Width, Height, Channels, 0);
+    return buffer;
+
 }
 
- 
+
 void saveImage(const char *filename, int Width, int Height, int Channels, unsigned char *Output) {
     memcpy(saveFile + strlen(saveFile), filename, strlen(filename));
     *(saveFile + strlen(saveFile) + 1) = 0;
-  
-    if (!tje_encode_to_file(saveFile, Width, Height, Channels, true, Output)) {
+    if (!stbi_write_jpg(saveFile, Width, Height, Channels, Output, 90)) {
         fprintf(stderr, "save JPEG fail.\n");
         return;
     }
@@ -776,7 +781,7 @@ void saveImage(const char *filename, int Width, int Height, int Channels, unsign
 #endif
 }
 
- 
+
 void splitpath(const char *path, char *drv, char *dir, char *name, char *ext) {
     const char *end;
     const char *p;
@@ -814,7 +819,7 @@ void splitpath(const char *path, char *drv, char *dir, char *name, char *ext) {
             *dir++ = *s++;
         *dir = '\0';
     }
-} 
+}
 
 void getCurrentFilePath(const char *filePath, char *saveFile) {
     char drive[_MAX_DRIVE];
@@ -868,7 +873,7 @@ int main(int argc, char **argv) {
         //  INTERPOLATE_NEAREST
         //	INTERPOLATE_TRILINEAR
         //	INTERPOLATE_TETRAHEDRAL
-        int interp_mode = INTERPOLATE_TETRAHEDRAL;
+        int interp_mode = INTERPOLATE_TRILINEAR;
         apply_lut(lutfile, inputImage, outputImg, Width, Height, Width * Channels, Channels, interp_mode,
                   is16bit);
         double nProcessTime = calcElapsed(startTime, now());
