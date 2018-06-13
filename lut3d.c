@@ -762,16 +762,14 @@ apply_lut(char *filename, const uint8_t *indata, uint8_t *outdata, int width, in
 char saveFile[1024];
 
 unsigned char *loadImage(const char *filename, int *Width, int *Height, int *Channels) {
-    unsigned char *buffer = stbi_load(filename, Width, Height, Channels, 0);
-    return buffer;
-
+    return (stbi_load(filename, Width, Height, Channels, 0));
 }
 
 
 void saveImage(const char *filename, int Width, int Height, int Channels, unsigned char *Output) {
     memcpy(saveFile + strlen(saveFile), filename, strlen(filename));
     *(saveFile + strlen(saveFile) + 1) = 0;
-    if (!stbi_write_jpg(saveFile, Width, Height, Channels, Output, 90)) {
+    if (!stbi_write_jpg(saveFile, Width, Height, Channels, Output, 100)) {
         fprintf(stderr, "save JPEG fail.\n");
         return;
     }
@@ -873,7 +871,7 @@ int main(int argc, char **argv) {
         //  INTERPOLATE_NEAREST
         //	INTERPOLATE_TRILINEAR
         //	INTERPOLATE_TETRAHEDRAL
-        int interp_mode = INTERPOLATE_TRILINEAR;
+        int interp_mode = INTERPOLATE_TETRAHEDRAL;
         apply_lut(lutfile, inputImage, outputImg, Width, Height, Width * Channels, Channels, interp_mode,
                   is16bit);
         double nProcessTime = calcElapsed(startTime, now());
